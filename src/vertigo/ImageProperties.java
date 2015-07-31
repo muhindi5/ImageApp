@@ -10,7 +10,6 @@ import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
-import com.drew.metadata.Tag;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import java.io.File;
 import java.io.IOException;

@@ -38,7 +38,6 @@ public class ImagePanel extends JPanel {
     private JPanel clippingPanel;
     private Dimension scaleSize;
     private BufferedImage clippedImg;
-    private AffineTransform transform =  new AffineTransform();
 
     /* Constructor for custom JPanel */
     public ImagePanel() {
@@ -52,9 +51,7 @@ public class ImagePanel extends JPanel {
             public void mousePressed(MouseEvent e) {
                 pointStart = new Point(e.getPoint());
                 pointEnd = pointStart;
-                Logger.getLogger(ImagePanel.class.getName()).
-                        log(Level.INFO, "MousePress Event at {0}", e.getPoint());
-//                repaintClipPanel();
+                repaintClipPanel();
                 repaint();
             }
 
@@ -62,9 +59,7 @@ public class ImagePanel extends JPanel {
             public void mouseReleased(MouseEvent e) {
 
                 pointEnd = e.getPoint();
-                Logger.getLogger(ImagePanel.class.getName()).
-                        log(Level.INFO, "MouseRelease Event at {0}", e.getPoint());
-//                repaintClipPanel();
+                repaintClipPanel();
                 repaint();
             }
         });
@@ -72,10 +67,8 @@ public class ImagePanel extends JPanel {
         addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                Logger.getLogger(ImagePanel.class.getName()).
-                        log(Level.INFO, "MouseDrag Event at {0}", e.getPoint());
                 pointEnd = e.getPoint();
-//                repaintClipPanel();
+                repaintClipPanel();
                 repaint();
             }
         });
@@ -92,16 +85,10 @@ public class ImagePanel extends JPanel {
         //set dimension to use for painting the BufferImage
         this.scaleSize = dimension;
         try {
-            Logger.getLogger(ImagePanel.class.getName()).
-                    log(Level.INFO, "Reading file...{0} ", f.getCanonicalFile());
-            
-            //get transform if image is rotated
-            transform = checkRotationTransform(f);
-            System.out.println("Transform is: "+transform.getTranslateX());
             bufferedImage = ImageIO.read(f);
         } catch (IOException ex) {
             Logger.getLogger(ImagePanel.class.getName()).
-                    log(Level.SEVERE, "Error reading image file: ", ex.getMessage());
+                    log(Level.SEVERE, "Error reading image file: {0}", ex.getMessage());
         }
 
         //add listeners
@@ -114,16 +101,12 @@ public class ImagePanel extends JPanel {
                 pointStart = new Point(e.getPoint());
                 clippingPanel = getClipPanel(e);
                 pointEnd = pointStart;
-                Logger.getLogger(ImagePanel.class.getName()).
-                        log(Level.INFO, "MousePress Event at {0}", e.getPoint());
                 repaint();
                 repaintClipPanel();
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                Logger.getLogger(ImagePanel.class.getName()).
-                        log(Level.INFO, "MouseRelease Event at {0}", e.getPoint());
                 pointEnd = e.getPoint();
                 repaint();
                 repaintClipPanel();
@@ -133,8 +116,6 @@ public class ImagePanel extends JPanel {
         addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                Logger.getLogger(ImagePanel.class.getName()).
-                        log(Level.INFO, "MouseDrag Event at {0}", e.getPoint());
                 pointEnd = e.getPoint();
                 repaint();
                 repaintClipPanel();
@@ -161,12 +142,13 @@ public class ImagePanel extends JPanel {
     /* Get the right-side panel for patinting clipped image on  */
     public JPanel getClipPanel(MouseEvent event) {
 
+        final int LEFT_JPANEL_OFFSET = 500;
         Component c = SwingUtilities.getRoot(this);
         Component splitPane = SwingUtilities.getDeepestComponentAt(c, 0, 0);
         JPanel panel = null;
 
         if (splitPane instanceof JSplitPane) {
-            Component x = splitPane.getComponentAt(event.getX() + 400, event.getY());
+            Component x = splitPane.getComponentAt(event.getX() + LEFT_JPANEL_OFFSET, event.getY());
             panel = (JPanel) x;
         }
         return panel;
@@ -182,17 +164,19 @@ public class ImagePanel extends JPanel {
     /* Marquee properties */
     public BasicStroke setStrokeProperties() {
         float dash1[] = {10.0f};
-        BasicStroke dashed = new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER,
-                10.0f, dash1, 0.0f);
+        BasicStroke dashed = new BasicStroke(2.0f, BasicStroke.CAP_BUTT, 
+            BasicStroke.JOIN_MITER,10.0f, dash1, 0.0f);
         return dashed;
     }
 
     /* Draw BufferImage and scale to dimensions */
     private void drawImage(Graphics g) {
-//        Graphics2D g2d = (Graphics2D)g;
 //       g2d.rotate(Math.toRadians(90));
-        g.drawImage(bufferedImage, 0, 0, scaleSize.width, scaleSize.height, null);
-//        g2d.drawImage(bufferedImage, transform, this);
+        if(bufferedImage!=null){
+            g.drawImage(bufferedImage, 0, 0, scaleSize.width, scaleSize.height, 0, 0, 
+                    bufferedImage.getWidth(), bufferedImage.getHeight(), null);
+        }
+//        g.drawImage(bufferedImage, 0, 0, scaleSize.width, scaleSize.height, null);
     }
 
     /**
@@ -213,26 +197,28 @@ public class ImagePanel extends JPanel {
      */
     private void drawClippedImg(Graphics g) {
         if (clippingPanel != null) {
+            
+//            get section of image under selection
             clippedImg = bufferedImage.
                     getSubimage(pointStart.x, pointEnd.y, pointEnd.x - pointStart.x, pointEnd.y - pointStart.y);
-//            Graphics2D g2d = (Graphics2D) g.create();
+            //scale the clip
             Rectangle rect2 = new Rectangle(pointStart.x, pointEnd.y,
                     pointEnd.x - pointStart.x, pointEnd.y - pointStart.y);
 //            clippingPanel.getGraphics().setClip(rect2);
             clippingPanel.getGraphics().drawImage(clippedImg,
                     rect2.x, rect2.y, rect2.width, rect2.height, null);
+
         }
     }
 
     /* Determine image orientation and rotate if needed. */
-    
-    private AffineTransform checkRotationTransform(File image){
+    private AffineTransform checkRotationTransform(File image) {
         ImageProperties properties = new ImageProperties();
         int orientation = properties.getImageOrientation(image);
-        System.out.println("got orientation: "+orientation);
-        
+        System.out.println("got orientation: " + orientation);
+
         AffineTransform tx = new AffineTransform();
-        switch(orientation){
+        switch (orientation) {
             case 1:
                 //image is OK
                 break;
@@ -248,8 +234,5 @@ public class ImagePanel extends JPanel {
         }
         return tx;
     }
-                
-                
-                
-        }
-   
+
+}

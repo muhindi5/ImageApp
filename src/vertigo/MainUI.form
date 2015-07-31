@@ -9,6 +9,7 @@
     </Property>
     <Property name="locationByPlatform" type="boolean" value="true"/>
     <Property name="name" type="java.lang.String" value="mainFrame" noResource="true"/>
+    <Property name="resizable" type="boolean" value="false"/>
   </Properties>
   <AccessibilityProperties>
     <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="uiFrame"/>
