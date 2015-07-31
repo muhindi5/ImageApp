@@ -56,6 +56,7 @@ public class MainUI extends javax.swing.JFrame {
         setBounds(new java.awt.Rectangle(0, 0, 400, 400));
         setLocationByPlatform(true);
         setName("mainFrame"); // NOI18N
+        setResizable(false);
 
         pnSplitter.setResizeWeight(0.5);
         pnSplitter.setName("pnSplitter"); // NOI18N
@@ -162,22 +163,6 @@ public class MainUI extends javax.swing.JFrame {
             pnSplitter.revalidate();
         }
     }//GEN-LAST:event_btnSelectImgActionPerformed
-
-    public BufferedImage getBuffer(File file) {
-        BufferedImage image = null;
-        try {
-            image = ImageIO.read(file);
-        } catch (IOException ex) {
-            Logger.getLogger(MainUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return image;
-    }
-
-    
-
-    public JPanel getPnTarget() {
-        return pnTarget;
-    }
 
     /**
      * @param args the command line arguments
